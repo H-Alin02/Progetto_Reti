@@ -30,41 +30,40 @@ def myNetwork():
     s4 = net.addSwitch('s4', dpid='0000000000000004')
 
     info( '*** Add hosts\n')
-    h1 = net.addHost('h1', cls=Host, ip='10.0.0.2/24', defaultRoute='via 10.0.0.1')
-    h2 = net.addHost('h2', cls=Host, ip='10.0.0.3/24', defaultRoute='via 10.0.0.1')
-    h3 = net.addHost('h3', cls=Host, ip='11.0.0.2/24', defaultRoute='via 11.0.0.1')
-    h4 = net.addHost('h4', cls=Host, ip='192.168.1.2/24', defaultRoute='via 192.168.1.1')
-    h5 = net.addHost('h5', cls=Host, ip='10.8.1.2/24', defaultRoute='via 10.8.1.1')
+    h1 = net.addHost('h1', cls=Host, ip='10.0.0.2/24', mac='00:00:00:00:00:01', defaultRoute='via 10.0.0.1')
+    h2 = net.addHost('h2', cls=Host, ip='10.0.0.3/24', mac='00:00:00:00:00:02', defaultRoute='via 10.0.0.1')
+    h3 = net.addHost('h3', cls=Host, ip='11.0.0.2/24', mac='00:00:00:00:00:03', defaultRoute='via 11.0.0.1')
+    h4 = net.addHost('h4', cls=Host, ip='192.168.1.2/24', mac='00:00:00:00:00:04', defaultRoute='via 192.168.1.1')
+    h5 = net.addHost('h5', cls=Host, ip='10.8.1.2/24', mac='00:00:00:00:00:05', defaultRoute='via 10.8.1.1')
 
     info( '*** Add links\n')
-    h1s1 = {'bw':100,'delay':'0.05'}
-    net.addLink(h1, s1, cls=TCLink , **h1s1)
-    h2s1 = {'bw':100,'delay':'0.05'}
-    net.addLink(h2, s1, cls=TCLink , **h2s1)
-    h3s4 = {'bw':1,'delay':'0.5'}
-    net.addLink(h3, s4, cls=TCLink , **h3s4)
-    h5s3 = {'bw':100,'delay':'0.05'}
-    net.addLink(h5, s3, cls=TCLink , **h5s3)
-    h4s2 = {'bw':100,'delay':'0.05'}
-    net.addLink(h4, s2, cls=TCLink , **h4s2)
-    s1s2 = {'bw':1,'delay':'2'}
-    net.addLink(s1, s2, cls=TCLink , **s1s2)
-    s2s3 = {'bw':5,'delay':'2'}
-    net.addLink(s2, s3, cls=TCLink , **s2s3)
-    s3s4 = {'bw':20,'delay':'2'}
-    net.addLink(s3, s4, cls=TCLink , **s3s4)
+    net.addLink(h1, s1, port1=1, port2=1, bw=100, delay='0.05')
+    net.addLink(h2, s1, port1=1, port2=2, bw=100, delay='0.05')
+    net.addLink(h3, s4, port1=1, port2=1, bw=1, delay='0.5')
+    net.addLink(h4, s2, port1=1, port2=1, bw=100, delay='0.05')
+    net.addLink(h5, s3, port1=1, port2=1, bw=100, delay='0.05')
+
+    net.addLink(s1, s2, port1=3, port2=2, bw=1, delay='2')
+    net.addLink(s2, s3, port1=3, port2=2, bw=5, delay='2')
+    net.addLink(s3, s4, port1=3, port2=2, bw=20, delay='2')
 
     info( '*** Starting network\n')
-    net.build()
+    net.start()
 
-    info( '*** Starting controllers\n')
-    c0.start()
-    
-    info( '*** Starting switches\n')
-    net.get('s1').start([])
-    net.get('s2').start([])
-    net.get('s3').start([])
-    net.get('s4').start([])
+    # Forcing OpenFlow13
+    for sw_name in ['s1','s2','s3','s4']:
+        sw = net.get(sw_name)
+        sw.cmd(f'ovs-vsctl set Bridge {sw.name} protocols=OpenFlow13')
+
+    # info( '*** Starting iperf servers on all hosts\n')
+
+    # for host in net.hosts:
+    #     info(f' *** Starting iperf server on {host.name}')
+    #     host.cmd(f'iperf -s -y C >> {host.name}_log.csv &')
+
+    # info('*** Starting Flask server on h1\n')
+    # h1 = net.get('h1')
+    # h1.cmd('python progetto03_h1_server.py &')
 
     info( '*** Post configure switches and hosts\n')
 
