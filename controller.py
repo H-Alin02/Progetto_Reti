@@ -203,6 +203,7 @@ class L3Controller(app_manager.RyuApp):
         dst_ip = ipv4_pkt.dst
 
         # Cerca una rotta per la destinazione
+        # algoritmo semplice, senza longest prefix match
         router_routes = self.routing_table.get(dpid, {})
         best_route = None
         for prefix, next_hop in router_routes.items():

@@ -66,7 +66,7 @@ def myNetwork():
 
     info('\n*** Starting Flask server on h1\n')
     h1 = net.get('h1')
-    h1.cmd('python progetto03_h1_server.py &')
+    h1.cmd('python h1_server.py &')
 
     info( '\n***Post configure switches and hosts\n')
 
